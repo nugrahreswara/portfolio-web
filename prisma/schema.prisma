@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id           Int    @id @default(1)
+  name         String @default("Anugerah Fakhriza Reswara")
+  titleEn      String @default("IT Network & Systems Engineer")
+  titleId      String @default("Insinyur Jaringan & Sistem TI")
+  summaryEn    String @default("")
+  summaryId    String @default("")
+  email        String @default("nugrahreswara@gmail.com")
+  phone        String @default("+62 856-5477-2530")
+  location     String @default("Samarinda, East Kalimantan")
+  linkedin     String @default("https://linkedin.com/in/nugrahreswara")
+  portfolioUrl String @default("https://nugrah.my.id")
+  github       String @default("")
+  updatedAt    DateTime @updatedAt
+}
+
+model Experience {
+  id          Int      @id @default(autoincrement())
+  company     String
+  roleEn      String
+  roleId      String   @default("")
+  location    String   @default("")
+  period      String   @default("")
+  startDate   String   @default("")
+  endDate     String   @default("")
+  current     Boolean  @default(false)
+  bulletsEn   String   @default("[]")
+  bulletsId   String   @default("[]")
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Education {
+  id        Int      @id @default(autoincrement())
+  school    String
+  degreeEn  String
+  degreeId  String   @default("")
+  field     String   @default("")
+  period    String   @default("")
+  current   Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Certification {
+  id            Int      @id @default(autoincrement())
+  titleEn       String
+  titleId       String   @default("")
+  issuer        String   @default("")
+  issuerDetail  String   @default("")
+  period        String   @default("")
+  category      String   @default("certification")
+  credentialUrl String   @default("")
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model Achievement {
+  id            Int      @id @default(autoincrement())
+  titleEn       String
+  titleId       String   @default("")
+  event         String   @default("")
+  result        String   @default("")
+  period        String   @default("")
+  descriptionEn String   @default("[]")
+  descriptionId String   @default("[]")
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model SkillGroup {
+  id        Int      @id @default(autoincrement())
+  titleEn   String
+  titleId   String   @default("")
+  itemsEn   String   @default("[]")
+  itemsId   String   @default("[]")
+  sortOrder Int      @default(0)
+}
+
+model Project {
+  id            Int      @id @default(autoincrement())
+  titleEn       String
+  titleId       String   @default("")
+  descriptionEn String   @default("")
+  descriptionId String   @default("")
+  tech          String   @default("")
+  url           String   @default("")
+  repo          String   @default("")
+  featured      Boolean  @default(false)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+*.db
+*.db-journal
+*.tsbuildinfo
+.env
+.taste-skill/
+npm-debug.log*
+.DS_Store
