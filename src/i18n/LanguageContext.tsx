@@ -16,9 +16,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem("locale") as Locale | null;
     if (stored === "en" || stored === "id") {
       setLocaleState(stored);
-    } else {
-      const nav = navigator.language.toLowerCase();
-      setLocaleState(nav.startsWith("id") ? "id" : "en");
+      return;
+    }
+    // Auto-detect: browser language first, then location via timezone
+    // (an Indonesian timezone defaults the site to Indonesian).
+    const nav = navigator.language.toLowerCase();
+    if (nav.startsWith("id")) {
+      setLocaleState("id");
+      return;
+    }
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
+      if (/^Asia\/(Jakarta|Pontianak|Makassar|Jayapura)$/.test(tz)) setLocaleState("id");
+    } catch {
+      /* keep the English default */
     }
   }, []);
 

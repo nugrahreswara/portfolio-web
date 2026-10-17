@@ -14,7 +14,7 @@ export default async function HomePage() {
   const data = await getPortfolioData();
   return (
     <>
-      <Navbar />
+      <Navbar profile={data.profile} />
       <main className="page-margin mx-auto max-w-[1400px] pb-10">
         <HeroSection profile={data.profile} />
         <PhotoBand />

@@ -103,7 +103,7 @@ export function Skills({ groups }: { groups: PortfolioData["skillGroups"] }) {
 export function Stats() {
   const { t } = useLanguage();
   const figures = [
-    { value: "10th", label: "National rank · LKS 2025" },
+    { value: "10th", label: t.stats.national },
     { value: "6", label: `${t.stats.competitions}` },
   ];
   return (

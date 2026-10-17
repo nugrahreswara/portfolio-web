@@ -10,7 +10,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     const lenis = new Lenis({
       duration: 1.15,
       smoothWheel: true,
-      anchors: { offset: -88 },
+      anchors: { offset: -96 },
     });
     setLenis(lenis);
     let raf = 0;

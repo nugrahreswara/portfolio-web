@@ -15,11 +15,18 @@ model Profile {
   summaryEn    String @default("")
   summaryId    String @default("")
   email        String @default("nugrahreswara@gmail.com")
+  // Private by policy: the phone number is stored for the admin panel only and
+  // is never included in the public page payload (see src/lib/portfolio.ts).
   phone        String @default("+62 856-5477-2530")
   location     String @default("Samarinda, East Kalimantan")
   linkedin     String @default("https://linkedin.com/in/nugrahreswara")
   portfolioUrl String @default("https://nugrah.my.id")
   github       String @default("")
+  // Downloadable assets. Admin can upload replacement files (Media tab); the
+  // public CV buttons read these paths.
+  cvEnUrl      String @default("/cv/Anugerah_Fakhriza_Reswara_CV_EN.pdf")
+  cvIdUrl      String @default("/cv/Anugerah_Fakhriza_Reswara_CV_ID.pdf")
+  avatarUrl    String @default("")
   updatedAt    DateTime @updatedAt
 }
 

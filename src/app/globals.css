@@ -33,6 +33,19 @@ html {
      do not know `clip` yet. */
   overflow-x: hidden;
   overflow-x: clip;
+  /* mobile-native baseline: no tap flash, no landscape font inflation */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Controls respond like controls, not like text (mobile-native). Text stays
+   selectable everywhere else. */
+button,
+[role="button"],
+.btn-solid {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 body {
@@ -73,9 +86,9 @@ html.lenis body {
   overflow: hidden;
 }
 
-/* Anchor offset below the sticky navbar */
+/* Anchor offset below the floating navigation bar */
 section[id] {
-  scroll-margin-top: 88px;
+  scroll-margin-top: 96px;
 }
 
 .measure {
@@ -106,6 +119,24 @@ section[id] {
 
 .btn-solid:active {
   transform: translateY(0) scale(0.99);
+}
+
+/* Floating glass navigation bar. Product requirement (floating glassmorphism
+   nav), kept restrained: one translucent surface, one hairline, one soft
+   shadow only because the bar truly floats over the page. Marked data-ui at
+   the usage site. The bar solidifies slightly once the page is scrolled. */
+.nav-glass {
+  background-color: rgb(var(--bg) / 0.72);
+  border: 1px solid rgb(var(--line));
+  box-shadow: 0 14px 44px -26px rgb(0 0 0 / 0.4);
+  backdrop-filter: blur(18px) saturate(150%); /* taste-skill-ignore: floating glass nav, explicit requirement */
+  -webkit-backdrop-filter: blur(18px) saturate(150%); /* taste-skill-ignore: floating glass nav, explicit requirement */
+  transition: background-color 260ms ease, box-shadow 260ms ease;
+}
+
+.nav-glass[data-scrolled="true"] {
+  background-color: rgb(var(--bg) / 0.9);
+  box-shadow: 0 20px 54px -30px rgb(0 0 0 / 0.5);
 }
 
 /* Admin login. The card is an interface fragment (data-ui), so it may keep its

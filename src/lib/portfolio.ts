@@ -2,6 +2,41 @@ import { db, parseJsonArray } from "./db";
 
 export type PortfolioData = Awaited<ReturnType<typeof getPortfolioData>>;
 
+// The public profile shape, deliberately narrower than the Prisma row: the
+// phone number never leaves the server (admin-only field), per the site's
+// privacy policy. Contact stays restricted to email + LinkedIn.
+export type PublicProfile = {
+  name: string;
+  titleEn: string;
+  titleId: string;
+  summaryEn: string;
+  summaryId: string;
+  email: string;
+  location: string;
+  linkedin: string;
+  portfolioUrl: string;
+  github: string;
+  cvEnUrl: string;
+  cvIdUrl: string;
+  avatarUrl: string;
+};
+
+const FALLBACK_PROFILE: PublicProfile = {
+  name: "Anugerah Fakhriza Reswara",
+  titleEn: "IT Network & Systems Engineer",
+  titleId: "Insinyur Jaringan & Sistem TI",
+  summaryEn: "",
+  summaryId: "",
+  email: "nugrahreswara@gmail.com",
+  location: "Samarinda, East Kalimantan",
+  linkedin: "https://linkedin.com/in/nugrahreswara",
+  portfolioUrl: "https://nugrah.my.id",
+  github: "",
+  cvEnUrl: "/cv/Anugerah_Fakhriza_Reswara_CV_EN.pdf",
+  cvIdUrl: "/cv/Anugerah_Fakhriza_Reswara_CV_ID.pdf",
+  avatarUrl: "",
+};
+
 export async function getPortfolioData() {
   const [profile, experiences, educations, certifications, achievements, skillGroups, projects] =
     await Promise.all([
@@ -14,20 +49,26 @@ export async function getPortfolioData() {
       db.project.findMany({ orderBy: { sortOrder: "asc" } }),
     ]);
 
+  const publicProfile: PublicProfile = profile
+    ? {
+        name: profile.name,
+        titleEn: profile.titleEn,
+        titleId: profile.titleId,
+        summaryEn: profile.summaryEn,
+        summaryId: profile.summaryId,
+        email: profile.email,
+        location: profile.location,
+        linkedin: profile.linkedin,
+        portfolioUrl: profile.portfolioUrl,
+        github: profile.github,
+        cvEnUrl: profile.cvEnUrl || FALLBACK_PROFILE.cvEnUrl,
+        cvIdUrl: profile.cvIdUrl || FALLBACK_PROFILE.cvIdUrl,
+        avatarUrl: profile.avatarUrl,
+      }
+    : FALLBACK_PROFILE;
+
   return {
-    profile: profile ?? {
-      name: "Anugerah Fakhriza Reswara",
-      titleEn: "IT Network & Systems Engineer",
-      titleId: "Insinyur Jaringan & Sistem TI",
-      summaryEn: "",
-      summaryId: "",
-      email: "nugrahreswara@gmail.com",
-      phone: "+62 856-5477-2530",
-      location: "Samarinda, East Kalimantan",
-      linkedin: "https://linkedin.com/in/nugrahreswara",
-      portfolioUrl: "https://nugrah.my.id",
-      github: "",
-    },
+    profile: publicProfile,
     experiences: experiences.map((e) => ({
       ...e,
       bulletsEn: parseJsonArray(e.bulletsEn),

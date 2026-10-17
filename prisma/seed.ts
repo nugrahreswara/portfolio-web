@@ -21,6 +21,9 @@ async function main() {
       linkedin: "https://linkedin.com/in/nugrahreswara",
       portfolioUrl: "https://nugrah.my.id",
       github: "",
+      cvEnUrl: "/cv/Anugerah_Fakhriza_Reswara_CV_EN.pdf",
+      cvIdUrl: "/cv/Anugerah_Fakhriza_Reswara_CV_ID.pdf",
+      avatarUrl: "",
     },
   });
 

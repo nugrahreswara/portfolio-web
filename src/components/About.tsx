@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { PortfolioData } from "@/lib/portfolio";
+import { CvDownload } from "./CvDownload";
 import { LangFade } from "./LangFade";
 import { Reveal } from "./Reveal";
 
@@ -35,6 +36,9 @@ export function About({ profile }: { profile: PortfolioData["profile"] }) {
           <p className="text-[14px] text-[rgb(var(--muted))]">
             {locale === "id" ? profile.titleId : profile.titleEn} · Samarinda
           </p>
+          <div className="mt-6">
+            <CvDownload cvEnUrl={profile.cvEnUrl} cvIdUrl={profile.cvIdUrl} variant="step" />
+          </div>
         </div>
       </Reveal>
     </section>

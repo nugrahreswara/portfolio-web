@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { Mail, Linkedin, Phone } from "lucide-react";
+import { Mail, Linkedin } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { PortfolioData } from "@/lib/portfolio";
+import { CvDownload } from "./CvDownload";
 import { LangFade } from "./LangFade";
 import { Reveal } from "./Reveal";
 
@@ -48,11 +49,13 @@ export function Contact({ profile }: { profile: PortfolioData["profile"] }) {
               <a className="link-underline flex items-center gap-2 font-medium" href={profile.linkedin} target="_blank" rel="noreferrer">
                 <Linkedin size={17} /> linkedin.com/in/nugrahreswara
               </a>
-              <a className="flex items-center gap-2 text-[rgb(var(--muted))]" href={`tel:${profile.phone.replace(/\s/g, "")}`}>
-                <Phone size={16} /> {profile.phone}
-              </a>
             </div>
             <p className="mt-4 text-[14px] text-[rgb(var(--muted))]">{t.contact.reply}</p>
+            <Reveal delay={0.14}>
+              <div className="mt-6">
+                <CvDownload cvEnUrl={profile.cvEnUrl} cvIdUrl={profile.cvIdUrl} variant="solid" />
+              </div>
+            </Reveal>
           </div>
         </Reveal>
         <Reveal delay={0.1}>
