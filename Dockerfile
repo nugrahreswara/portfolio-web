@@ -30,8 +30,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY scripts/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh && mkdir -p /app/data && chown nextjs:nodejs /app/data
 USER nextjs
-EXPOSE 3000
-ENV PORT=3000
+EXPOSE 49374
+ENV PORT=49374
 ENV HOSTNAME="0.0.0.0"
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]
