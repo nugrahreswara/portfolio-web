@@ -99,7 +99,7 @@ export function ProgressRail() {
   );
 }
 
-function Node({ active, nodeRef }: { active: boolean; nodeRef: React.RefObject<HTMLSpanElement> }) {
+function Node({ active, nodeRef }: { active: boolean; nodeRef: React.RefObject<HTMLSpanElement | null> }) {
   return (
     <motion.span
       ref={nodeRef}

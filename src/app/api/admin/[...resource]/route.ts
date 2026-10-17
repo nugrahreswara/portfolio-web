@@ -7,7 +7,7 @@ const MODELS = ["profile", "experiences", "educations", "certifications", "achie
 type Model = (typeof MODELS)[number];
 
 async function authed(): Promise<boolean> {
-  const token = cookies().get(ADMIN_COOKIE)?.value;
+  const token = (await cookies()).get(ADMIN_COOKIE)?.value;
   if (!token) return false;
   return verifyTokenString(token);
 }
@@ -52,11 +52,15 @@ function normalize(model: Model, data: Record<string, unknown>) {
   return out;
 }
 
-export async function GET(_req: Request, { params }: { params: { resource: string[] } }) {
+// Next.js 16: route handler params are async.
+type RouteContext = { params: Promise<{ resource: string[] }> };
+
+export async function GET(_req: Request, { params }: RouteContext) {
   if (!(await authed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const model = params.resource?.[0] as Model;
+  const { resource } = await params;
+  const model = resource?.[0] as Model;
   if (!MODELS.includes(model)) return NextResponse.json({ error: "Unknown resource" }, { status: 404 });
-  const id = params.resource?.[1];
+  const id = resource?.[1];
   const d = delegate(model) as any;
   if (model === "profile") {
     const row = await d.findUnique({ where: { id: 1 } });
@@ -70,9 +74,10 @@ export async function GET(_req: Request, { params }: { params: { resource: strin
   return NextResponse.json(rows);
 }
 
-export async function POST(req: Request, { params }: { params: { resource: string[] } }) {
+export async function POST(req: Request, { params }: RouteContext) {
   if (!(await authed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const model = params.resource?.[0] as Model;
+  const { resource } = await params;
+  const model = resource?.[0] as Model;
   if (!MODELS.includes(model) || model === "messages" || model === "profile") {
     return NextResponse.json({ error: "Unknown resource" }, { status: 404 });
   }
@@ -82,9 +87,10 @@ export async function POST(req: Request, { params }: { params: { resource: strin
   return NextResponse.json(row, { status: 201 });
 }
 
-export async function PUT(req: Request, { params }: { params: { resource: string[] } }) {
+export async function PUT(req: Request, { params }: RouteContext) {
   if (!(await authed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const [modelRaw, idRaw] = params.resource ?? [];
+  const { resource } = await params;
+  const [modelRaw, idRaw] = resource ?? [];
   const model = modelRaw as Model;
   if (!MODELS.includes(model)) return NextResponse.json({ error: "Unknown resource" }, { status: 404 });
   const body = await req.json();
@@ -99,9 +105,10 @@ export async function PUT(req: Request, { params }: { params: { resource: string
   return NextResponse.json(row);
 }
 
-export async function DELETE(_req: Request, { params }: { params: { resource: string[] } }) {
+export async function DELETE(_req: Request, { params }: RouteContext) {
   if (!(await authed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const [modelRaw, idRaw] = params.resource ?? [];
+  const { resource } = await params;
+  const [modelRaw, idRaw] = resource ?? [];
   const model = modelRaw as Model;
   if (!MODELS.includes(model) || model === "profile") {
     return NextResponse.json({ error: "Unknown resource" }, { status: 404 });

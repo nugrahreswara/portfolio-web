@@ -7,8 +7,9 @@ import { contentTypeFor, resolveUpload } from "@/lib/uploads";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(_req: Request, { params }: { params: { path: string[] } }) {
-  const name = (params.path ?? []).join("/");
+// Next.js 16: route handler params are async.
+export async function GET(_req: Request, { params }: { params: Promise<{ path: string[] }> }) {
+  const name = ((await params).path ?? []).join("/");
   const target = resolveUpload(name);
   if (!target || name.includes("..") || name.includes("\\")) {
     return new Response("Not found", { status: 404 });

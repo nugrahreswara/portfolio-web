@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { Mail, Linkedin } from "lucide-react";
+import { Mail } from "lucide-react";
+import { LinkedInIcon } from "./icons";
 import { useLanguage } from "@/i18n/LanguageContext";
 import type { PortfolioData } from "@/lib/portfolio";
 import { CvDownload } from "./CvDownload";
@@ -47,7 +48,7 @@ export function Contact({ profile }: { profile: PortfolioData["profile"] }) {
                 <Mail size={17} /> {profile.email}
               </a>
               <a className="link-underline flex items-center gap-2 font-medium" href={profile.linkedin} target="_blank" rel="noreferrer">
-                <Linkedin size={17} /> linkedin.com/in/nugrahreswara
+                <LinkedInIcon size={17} /> linkedin.com/in/nugrahreswara
               </a>
             </div>
             <p className="mt-4 text-[14px] text-[rgb(var(--muted))]">{t.contact.reply}</p>

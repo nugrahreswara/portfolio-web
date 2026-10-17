@@ -6,7 +6,7 @@ Production-grade portfolio website + dynamic admin CMS for **Anugerah Fakhriza R
 - Downloadable CVs: redacted PDFs in **English (US)** and **Bahasa Indonesia** served from `public/cv/`, reachable from prominent download buttons in the Hero, Profile and Contact sections. The files can be replaced from the admin panel without code changes.
 - Admin CMS at `/admin`: password login (JWT cookie), CRUD for profile, experience, education, certifications/training, achievements, skill groups, projects, a contact-message inbox, and a **file upload library** (PDFs/images stored in the data volume, served at `/files/*`).
 - Privacy: the phone number is **never rendered on the public site and never shipped in the public page payload** - contact stays restricted to email and LinkedIn. The phone field exists only in the admin panel.
-- Stack: **Next.js 14 (App Router, TypeScript) · Tailwind CSS · Framer Motion · canvas-confetti · next-themes · Prisma · SQLite · Docker**.
+- Stack: **Next.js 16 (App Router, TypeScript) · React 19 · Tailwind CSS · Framer Motion · canvas-confetti · next-themes · Prisma · SQLite · Docker**.
 
 ## Quick start (local dev)
 
@@ -37,7 +37,7 @@ docker compose up -d --build
 docker compose logs -f portfolio
 ```
 
-- App serves on port `3000`. Put Nginx/Caddy in front for HTTPS.
+- App serves on port `8039`. Put Nginx/Caddy in front for HTTPS.
 - SQLite lives in `./data/portfolio.db` on the host (mounted to `/app/data` in the container - survives rebuilds). Uploaded media lives in `./data/uploads/` (served at `/files/*`). Local dev uses the same `./data/` folder.
 - On first boot the entrypoint runs `prisma migrate deploy` and seeds the CV data **only if the DB is empty**. Restarts never wipe admin edits.
 - Update later: `docker compose pull` (or rebuild) `&& docker compose up -d`.
@@ -123,3 +123,4 @@ docker-compose.yml     # single service + ./data volume
 | `npm run db:migrate` | `prisma migrate dev` |
 | `npm run db:seed` | Seed CV data (`tsx prisma/seed.ts`) |
 | `npm run db:studio` | Prisma Studio data browser |
+| `npm run typecheck` | TypeScript check (`tsc --noEmit`) |

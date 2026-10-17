@@ -25,6 +25,6 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE() {
-  clearSession();
+  await clearSession();
   return NextResponse.json({ ok: true });
 }

@@ -12,7 +12,8 @@ export async function createSession() {
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(secret);
-  cookies().set(COOKIE, token, {
+  // Next.js 16: request APIs (cookies) are async-only.
+  (await cookies()).set(COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -21,12 +22,12 @@ export async function createSession() {
   });
 }
 
-export function clearSession() {
-  cookies().set(COOKIE, "", { path: "/", maxAge: 0 });
+export async function clearSession() {
+  (await cookies()).set(COOKIE, "", { path: "/", maxAge: 0 });
 }
 
 export async function verifySession(): Promise<boolean> {
-  const token = cookies().get(COOKIE)?.value;
+  const token = (await cookies()).get(COOKIE)?.value;
   if (!token) return false;
   try {
     await jwtVerify(token, secret);

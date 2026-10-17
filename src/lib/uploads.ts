@@ -48,7 +48,9 @@ export function storedName(original: string): string {
 
 // Resolve a request path inside UPLOADS_DIR; anything that escapes is refused.
 export function resolveUpload(name: string): string | null {
-  const base = path.resolve(UPLOADS_DIR);
+  // Uploads live in a runtime data volume (or a directory created after build),
+  // so keep Turbopack's tracer from scanning the whole project for it.
+  const base = path.resolve(/* turbopackIgnore: true */ UPLOADS_DIR);
   const target = path.resolve(base, name);
   if (target !== base && !target.startsWith(base + path.sep)) return null;
   return target;
