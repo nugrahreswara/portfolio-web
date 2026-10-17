@@ -8,3 +8,4 @@ out/
 .taste-skill/
 npm-debug.log*
 .DS_Store
+.opencode/
