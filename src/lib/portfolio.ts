@@ -1,4 +1,5 @@
 import { db, parseJsonArray } from "./db";
+import { normalizeCategory } from "./categories";
 
 export type PortfolioData = Awaited<ReturnType<typeof getPortfolioData>>;
 
@@ -43,7 +44,7 @@ export async function getPortfolioData() {
       db.profile.findUnique({ where: { id: 1 } }),
       db.experience.findMany({ orderBy: { sortOrder: "asc" } }),
       db.education.findMany({ orderBy: { sortOrder: "asc" } }),
-      db.certification.findMany({ orderBy: { sortOrder: "asc" } }),
+      db.certification.findMany({ orderBy: [{ category: "asc" }, { sortOrder: "asc" }] }),
       db.achievement.findMany({ orderBy: { sortOrder: "asc" } }),
       db.skillGroup.findMany({ orderBy: { sortOrder: "asc" } }),
       db.project.findMany({ orderBy: { sortOrder: "asc" } }),
@@ -75,7 +76,11 @@ export async function getPortfolioData() {
       bulletsId: parseJsonArray(e.bulletsId),
     })),
     educations,
-    certifications,
+    // Strict split for the two public sections. `normalizeCategory` collapses
+    // blank/unknown values (rows saved before the fix) to "certification", so a
+    // certification can never leak into the Training list again.
+    certifications: certifications.filter((c) => normalizeCategory(c.category) === "certification"),
+    trainings: certifications.filter((c) => normalizeCategory(c.category) === "training"),
     achievements: achievements.map((a) => ({
       ...a,
       descriptionEn: parseJsonArray(a.descriptionEn),

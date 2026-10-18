@@ -42,7 +42,9 @@ model Experience {
   current     Boolean  @default(false)
   bulletsEn   String   @default("[]")
   bulletsId   String   @default("[]")
-  sortOrder   Int      @default(0)
+  // Server-managed position (see src/lib/ordering.ts). The unique index makes a
+  // duplicate position impossible; the admin panel reorders by drag and drop.
+  sortOrder   Int      @default(0) @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -55,7 +57,10 @@ model Education {
   field     String   @default("")
   period    String   @default("")
   current   Boolean  @default(false)
-  sortOrder Int      @default(0)
+  // Position inside the table, server-managed (see src/lib/ordering.ts). The
+  // unique index makes a duplicate position impossible; the admin panel
+  // reorders by drag and drop instead of manual numbers.
+  sortOrder Int      @default(0) @unique
   createdAt DateTime @default(now())
 }
 
@@ -66,10 +71,15 @@ model Certification {
   issuer        String   @default("")
   issuerDetail  String   @default("")
   period        String   @default("")
+  // "certification" | "training". The public page renders the two groups in
+  // separate sections, so this must never be blank (see src/lib/categories.ts).
   category      String   @default("certification")
   credentialUrl String   @default("")
+  // Position inside the item's own category group.
   sortOrder     Int      @default(0)
   createdAt     DateTime @default(now())
+
+  @@unique([category, sortOrder])
 }
 
 model Achievement {
@@ -81,7 +91,7 @@ model Achievement {
   period        String   @default("")
   descriptionEn String   @default("[]")
   descriptionId String   @default("[]")
-  sortOrder     Int      @default(0)
+  sortOrder     Int      @default(0) @unique
   createdAt     DateTime @default(now())
 }
 
@@ -91,7 +101,7 @@ model SkillGroup {
   titleId   String   @default("")
   itemsEn   String   @default("[]")
   itemsId   String   @default("[]")
-  sortOrder Int      @default(0)
+  sortOrder Int      @default(0) @unique
 }
 
 model Project {
@@ -104,7 +114,7 @@ model Project {
   url           String   @default("")
   repo          String   @default("")
   featured      Boolean  @default(false)
-  sortOrder     Int      @default(0)
+  sortOrder     Int      @default(0) @unique
   createdAt     DateTime @default(now())
 }
 

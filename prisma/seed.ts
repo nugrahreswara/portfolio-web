@@ -132,16 +132,19 @@ async function main() {
   });
 
   await db.certification.deleteMany();
+  // Positions are per category group (the public page renders the two groups in
+  // separate sections) and are managed by the server after seeding - see
+  // src/lib/ordering.ts.
   const certs = [
     { titleEn: "MikroTik Certified Network Associate (MTCNA)", titleId: "MikroTik Certified Network Associate (MTCNA)", issuer: "MikroTik", issuerDetail: "2024", period: "Jun 2024 - 2027", category: "certification", sortOrder: 1 },
     { titleEn: "Junior Technical Support", titleId: "Junior Technical Support", issuer: "BNSP - National Professional Certification Agency", issuerDetail: "2025", period: "May 2025 - 2028", category: "certification", sortOrder: 2 },
     { titleEn: "Omada Certified Network Administrator - Routing & Switching", titleId: "Omada Certified Network Administrator - Routing & Switching", issuer: "Omada TP-Link", issuerDetail: "2025", period: "May 2025 - 2028", category: "certification", sortOrder: 3 },
     { titleEn: "Omada Certified Network Administrator - Wireless", titleId: "Omada Certified Network Administrator - Wireless", issuer: "Omada TP-Link", issuerDetail: "2025", period: "May 2025 - 2028", category: "certification", sortOrder: 4 },
-    { titleEn: "Proxmox-based Virtual Server Management Training", titleId: "Pelatihan Manajemen Server Virtual berbasis Proxmox", issuer: "Samarinda State Polytechnic", issuerDetail: "", period: "Jun 19, 2024", category: "training", sortOrder: 5 },
-    { titleEn: "Getting Started with Linux Fundamentals (RH104 RHA) v9.1", titleId: "Dasar Linux Fundamentals (RH104 RHA) v9.1", issuer: "Red Hat Academy", issuerDetail: "", period: "Nov 20, 2025", category: "training", sortOrder: 6 },
-    { titleEn: "Red Hat System Administration I (RH124 RHA) v10", titleId: "Administrasi Sistem Red Hat I (RH124 RHA) v10", issuer: "Red Hat Academy", issuerDetail: "", period: "Jun 6, 2026", category: "training", sortOrder: 7 },
-    { titleEn: "Red Hat System Administration II (RH134 RHA) v10", titleId: "Administrasi Sistem Red Hat II (RH134 RHA) v10", issuer: "Red Hat Academy", issuerDetail: "", period: "Aug 2, 2026", category: "training", sortOrder: 8 },
-    { titleEn: "RHEL Automation with Ansible (RH294 RHA) v9.0", titleId: "Otomasi RHEL dengan Ansible (RH294 RHA) v9.0", issuer: "Red Hat Academy", issuerDetail: "", period: "Sep 20, 2026", category: "training", sortOrder: 9 },
+    { titleEn: "Proxmox-based Virtual Server Management Training", titleId: "Pelatihan Manajemen Server Virtual berbasis Proxmox", issuer: "Samarinda State Polytechnic", issuerDetail: "", period: "Jun 19, 2024", category: "training", sortOrder: 1 },
+    { titleEn: "Getting Started with Linux Fundamentals (RH104 RHA) v9.1", titleId: "Dasar Linux Fundamentals (RH104 RHA) v9.1", issuer: "Red Hat Academy", issuerDetail: "", period: "Nov 20, 2025", category: "training", sortOrder: 2 },
+    { titleEn: "Red Hat System Administration I (RH124 RHA) v10", titleId: "Administrasi Sistem Red Hat I (RH124 RHA) v10", issuer: "Red Hat Academy", issuerDetail: "", period: "Jun 6, 2026", category: "training", sortOrder: 3 },
+    { titleEn: "Red Hat System Administration II (RH134 RHA) v10", titleId: "Administrasi Sistem Red Hat II (RH134 RHA) v10", issuer: "Red Hat Academy", issuerDetail: "", period: "Aug 2, 2026", category: "training", sortOrder: 4 },
+    { titleEn: "RHEL Automation with Ansible (RH294 RHA) v9.0", titleId: "Otomasi RHEL dengan Ansible (RH294 RHA) v9.0", issuer: "Red Hat Academy", issuerDetail: "", period: "Sep 20, 2026", category: "training", sortOrder: 5 },
   ];
   for (const c of certs) await db.certification.create({ data: c });
 

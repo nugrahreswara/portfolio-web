@@ -26,7 +26,7 @@ export default async function HomePage() {
           <Skills groups={data.skillGroups} />
           <Projects items={data.projects} />
           <Achievements items={data.achievements} />
-          <Credentials items={data.certifications} />
+          <Credentials certifications={data.certifications} trainings={data.trainings} />
           <Contact profile={data.profile} />
         </div>
         <Footer profile={data.profile} />

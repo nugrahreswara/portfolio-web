@@ -193,11 +193,15 @@ export function Achievements({ items }: { items: PortfolioData["achievements"] }
   );
 }
 
-export function Credentials({ items }: { items: PortfolioData["certifications"] }) {
+export function Credentials({
+  certifications,
+  trainings,
+}: {
+  certifications: PortfolioData["certifications"];
+  trainings: PortfolioData["trainings"];
+}) {
   const { locale, t } = useLanguage();
-  const certs = items.filter((c) => c.category === "certification");
-  const trainings = items.filter((c) => c.category !== "certification");
-  const Row = ({ c }: { c: (typeof items)[number] }) => (
+  const Row = ({ c }: { c: PortfolioData["certifications"][number] }) => (
     <motion.div
       whileHover={{ x: 6, boxShadow: "0 12px 30px -18px rgba(26,75,224,0.55)" }}
       transition={{ type: "spring", stiffness: 320, damping: 22 }}
@@ -220,24 +224,31 @@ export function Credentials({ items }: { items: PortfolioData["certifications"] 
         </h2>
       </Reveal>
       {/* Certifications ride the same timeline rail as Experience and Education. */}
-      <div className="relative mt-8">
-        <ProgressRail />
-        <ol className="space-y-2">
-          {certs.map((c, i) => (
-            <TimelineItem key={c.id} delay={Math.min(i * 0.05, 0.25)}>
-              <Row c={c} />
-            </TimelineItem>
-          ))}
-        </ol>
-      </div>
-      <Reveal delay={0.05}>
-        <h3 className="mt-10 text-[20px] font-semibold">{t.certs.training}</h3>
-      </Reveal>
-      <div className="mt-4 space-y-2">
-        {trainings.map((c) => (
-          <Row key={c.id} c={c} />
-        ))}
-      </div>
+      {certifications.length ? (
+        <div className="relative mt-8">
+          <ProgressRail />
+          <ol className="space-y-2">
+            {certifications.map((c, i) => (
+              <TimelineItem key={c.id} delay={Math.min(i * 0.05, 0.25)}>
+                <Row c={c} />
+              </TimelineItem>
+            ))}
+          </ol>
+        </div>
+      ) : null}
+      {/* Training is its own list, fed only by category === "training" rows. */}
+      {trainings.length ? (
+        <>
+          <Reveal delay={0.05}>
+            <h3 className="mt-10 text-[20px] font-semibold">{t.certs.training}</h3>
+          </Reveal>
+          <div className="mt-4 space-y-2">
+            {trainings.map((c) => (
+              <Row key={c.id} c={c} />
+            ))}
+          </div>
+        </>
+      ) : null}
     </section>
   );
 }

@@ -3,6 +3,8 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, FileText, Loader2, Lock, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { normalizeCategory } from "@/lib/categories";
+import { OrderList } from "./AdminOrderList";
 
 export function LoginScreen() {
   const [password, setPassword] = useState("");
@@ -165,7 +167,15 @@ type Field = {
   kind: "text" | "textarea" | "list" | "check" | "number" | "select" | "file";
   options?: string[];
   accept?: string;
+  /** Helper line under the control. */
+  hint?: string;
+  /** Value a brand new row starts with (selects especially). */
+  defaultValue?: string;
 };
+
+// Tables whose positions are server-managed and reordered by drag and drop.
+// They deliberately have no "Order" field: see src/lib/ordering.ts.
+const ORDERED_TABS = new Set(["experiences", "educations", "certifications", "achievements", "skillGroups", "projects"]);
 
 const CONFIG: Record<string, { label: string; fields: Field[]; singleton?: boolean; readonly?: boolean }> = {
   profile: {
@@ -199,7 +209,6 @@ const CONFIG: Record<string, { label: string; fields: Field[]; singleton?: boole
       { key: "current", label: "Current role", kind: "check" },
       { key: "bulletsEn", label: "Bullets (EN) - one per line", kind: "list" },
       { key: "bulletsId", label: "Bullets (ID) - one per line", kind: "list" },
-      { key: "sortOrder", label: "Order", kind: "number" },
     ],
   },
   educations: {
@@ -211,7 +220,6 @@ const CONFIG: Record<string, { label: string; fields: Field[]; singleton?: boole
       { key: "field", label: "Field", kind: "text" },
       { key: "period", label: "Period label", kind: "text" },
       { key: "current", label: "Current", kind: "check" },
-      { key: "sortOrder", label: "Order", kind: "number" },
     ],
   },
   certifications: {
@@ -221,9 +229,15 @@ const CONFIG: Record<string, { label: string; fields: Field[]; singleton?: boole
       { key: "titleId", label: "Title (ID)", kind: "text" },
       { key: "issuer", label: "Issuer", kind: "text" },
       { key: "period", label: "Period label", kind: "text" },
-      { key: "category", label: "Category", kind: "select", options: ["certification", "training"] },
+      {
+        key: "category",
+        label: "Category",
+        kind: "select",
+        options: ["certification", "training"],
+        defaultValue: "certification",
+        hint: "Certifications and Training are two separate sections on the site. Drag a card between the groups to switch an item.",
+      },
       { key: "credentialUrl", label: "Credential URL", kind: "text" },
-      { key: "sortOrder", label: "Order", kind: "number" },
     ],
   },
   achievements: {
@@ -236,7 +250,6 @@ const CONFIG: Record<string, { label: string; fields: Field[]; singleton?: boole
       { key: "period", label: "Period label", kind: "text" },
       { key: "descriptionEn", label: "Details (EN) - one per line", kind: "list" },
       { key: "descriptionId", label: "Details (ID) - one per line", kind: "list" },
-      { key: "sortOrder", label: "Order", kind: "number" },
     ],
   },
   skillGroups: {
@@ -246,7 +259,6 @@ const CONFIG: Record<string, { label: string; fields: Field[]; singleton?: boole
       { key: "titleId", label: "Title (ID)", kind: "text" },
       { key: "itemsEn", label: "Items (EN) - one per line", kind: "list" },
       { key: "itemsId", label: "Items (ID) - one per line", kind: "list" },
-      { key: "sortOrder", label: "Order", kind: "number" },
     ],
   },
   projects: {
@@ -260,7 +272,6 @@ const CONFIG: Record<string, { label: string; fields: Field[]; singleton?: boole
       { key: "url", label: "URL", kind: "text" },
       { key: "repo", label: "Repo URL", kind: "text" },
       { key: "featured", label: "Featured", kind: "check" },
-      { key: "sortOrder", label: "Order", kind: "number" },
     ],
   },
   media: { label: "File uploads", fields: [], readonly: true },
@@ -431,7 +442,21 @@ function Editor({ resource, row, onSaved, onCancel }: { resource: string; row: R
   const fields = CONFIG[resource].fields;
   const [form, setForm] = useState<Record<string, any>>(() => {
     const init: Record<string, any> = {};
-    for (const f of fields) init[f.key] = row ? toFormValue(row[f.key]) : f.kind === "check" ? false : "";
+    for (const f of fields) {
+      if (row) {
+        // A select must never open on a value the list does not offer: a row
+        // saved before the category fix (blank) would otherwise post its blank
+        // value back and quietly land in the wrong public section.
+        if (f.kind === "select") {
+          const current = String(row[f.key] ?? "");
+          init[f.key] = f.options?.includes(current) ? current : f.defaultValue ?? f.options?.[0] ?? "";
+        } else {
+          init[f.key] = toFormValue(row[f.key]);
+        }
+      } else {
+        init[f.key] = f.kind === "check" ? false : f.kind === "select" ? f.defaultValue ?? f.options?.[0] ?? "" : "";
+      }
+    }
     return init;
   });
   const [busy, setBusy] = useState(false);
@@ -441,7 +466,11 @@ function Editor({ resource, row, onSaved, onCancel }: { resource: string; row: R
     const isSingleton = CONFIG[resource].singleton;
     const url = isSingleton ? `/api/admin/${resource}` : row?.id ? `/api/admin/${resource}/${row.id}` : `/api/admin/${resource}`;
     const method = isSingleton ? "PUT" : row?.id ? "PUT" : "POST";
-    await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+    const payload = { ...form };
+    // Certification.category is a hard switch between two public sections;
+    // send the normalised value so blank can never be stored.
+    if (resource === "certifications") payload.category = normalizeCategory(payload.category);
+    await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     setBusy(false);
     onSaved();
   }
@@ -460,8 +489,8 @@ function Editor({ resource, row, onSaved, onCancel }: { resource: string; row: R
               <>
                 <span className="mb-1 block text-[13.5px] font-semibold text-[rgb(var(--muted))]">{f.label}</span>
                 {f.kind === "select" ? (
-                  <select value={String(form[f.key] ?? "")} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className="w-full rounded-[10px] border border-[rgb(var(--line))] bg-[rgb(var(--bg))] px-3 py-2 text-[15px]">
-                    {(f.options ?? []).map((o) => <option key={o} value={o}>{o}</option>)}
+                  <select value={String(form[f.key] ?? "") || (f.options?.[0] ?? "")} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className="w-full rounded-[10px] border border-[rgb(var(--line))] bg-[rgb(var(--bg))] px-3 py-2 text-[15px]">
+                    {(f.options ?? []).map((o) => <option key={o} value={o}>{o === "certification" ? "Certification" : o === "training" ? "Training" : o}</option>)}
                   </select>
                 ) : f.kind === "textarea" || f.kind === "list" ? (
                   <textarea value={String(form[f.key] ?? "")} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} rows={f.kind === "list" ? 4 : 3} className="w-full rounded-[10px] border border-[rgb(var(--line))] bg-[rgb(var(--bg))] px-3 py-2 text-[14px]" />
@@ -482,12 +511,16 @@ function Editor({ resource, row, onSaved, onCancel }: { resource: string; row: R
                 ) : (
                   <input type={f.kind === "number" ? "number" : "text"} value={String(form[f.key] ?? "")} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className="w-full rounded-[10px] border border-[rgb(var(--line))] bg-[rgb(var(--bg))] px-3 py-2 text-[15px]" />
                 )}
+                {f.hint ? <span className="mt-1 block text-[12.5px] leading-snug text-[rgb(var(--muted))]">{f.hint}</span> : null}
               </>
             )}
           </label>
         ))}
       </div>
-      <div className="mt-4 flex gap-2">
+      <p className="mt-4 text-[12.5px] text-[rgb(var(--muted))]">
+        Order is automatic: a new item is appended to the end of its group, and you can drag cards to reposition them.
+      </p>
+      <div className="mt-3 flex gap-2">
         <button onClick={save} disabled={busy} className="btn-solid px-5 py-2.5 text-[15px] disabled:opacity-60">{busy ? "…" : "Save"}</button>
         <button onClick={onCancel} className="rounded-[10px] border border-[rgb(var(--line))] px-5 py-2.5 text-[15px] font-semibold">Cancel</button>
       </div>
@@ -593,20 +626,39 @@ export function Dashboard() {
             ))}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <button onClick={() => setEditing({ row: null })} className="btn-solid px-5 py-2.5 text-[15px]">+ Add {cfg.label.toLowerCase()}</button>
-            {loading ? <p className="text-[15px] text-[rgb(var(--muted))]">Loading…</p> : rows.map((r) => (
-              <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-[rgb(var(--line))] px-5 py-4">
-                <div className="min-w-0 text-[15px]">
-                  <p className="truncate font-semibold">{r.company ?? r.school ?? r.titleEn ?? r.name ?? `#${r.id}`}</p>
-                  <p className="truncate text-[rgb(var(--muted))]">{r.roleEn ?? r.degreeEn ?? r.issuer ?? r.event ?? r.tech ?? ""}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => setEditing({ row: r })} className="rounded-[10px] border border-[rgb(var(--line))] px-4 py-1.5 text-[14px] font-semibold">Edit</button>
-                  <button onClick={() => remove(r.id)} className="rounded-[10px] border border-red-300 px-4 py-1.5 text-[14px] font-semibold text-red-600">Delete</button>
-                </div>
+            {loading ? (
+              <p className="text-[15px] text-[rgb(var(--muted))]">Loading…</p>
+            ) : rows.length === 0 ? (
+              <p className="rounded-[14px] border border-dashed border-[rgb(var(--line))] px-5 py-6 text-[15px] text-[rgb(var(--muted))]">
+                Nothing here yet. Add the first {cfg.label.toLowerCase()} item above.
+              </p>
+            ) : ORDERED_TABS.has(tab) ? (
+              <OrderList
+                resource={tab}
+                rows={rows}
+                groupByCategory={tab === "certifications"}
+                onReordered={setRows}
+                onEdit={(row) => setEditing({ row })}
+                onDelete={(row) => remove(row.id)}
+              />
+            ) : (
+              <div className="space-y-3">
+                {rows.map((r) => (
+                  <div key={r.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-[rgb(var(--line))] px-5 py-4">
+                    <div className="min-w-0 text-[15px]">
+                      <p className="truncate font-semibold">{r.company ?? r.school ?? r.titleEn ?? r.name ?? `#${r.id}`}</p>
+                      <p className="truncate text-[rgb(var(--muted))]">{r.roleEn ?? r.degreeEn ?? r.issuer ?? r.event ?? r.tech ?? ""}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => setEditing({ row: r })} className="rounded-[10px] border border-[rgb(var(--line))] px-4 py-1.5 text-[14px] font-semibold">Edit</button>
+                      <button onClick={() => remove(r.id)} className="rounded-[10px] border border-red-300 px-4 py-1.5 text-[14px] font-semibold text-red-600">Delete</button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>
